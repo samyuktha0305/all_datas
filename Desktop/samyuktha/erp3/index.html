@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>orders</h1>
+    <script>
+        const consumerKey = 'ck_03aa52dfa64b8857d818fd920a75868327d9ba57';
+        const consumerSecret = 'cs_6501554ef90417ea4c552176073cbdd001ebd163';
+const ordersUrl = `https://vaseegrahveda.com/wp-json/wc/v3/orders?consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
+
+// Make a GET request to fetch orders
+fetch(ordersUrl)
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response data here
+        console.log('Orders:', data);
+    })
+    .catch(error => {
+        console.error('Error fetching orders:', error);
+        alert('An error occurred while fetching orders. Please try again.');
+    });
+    </script>
+</body>
+</html>

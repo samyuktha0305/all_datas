@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List of Orders</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .product-img {
+            max-width: 100px;
+            max-height: 100px;
+        }
+    </style>
+    
+</head>
+<body>
+    <h1>List of Orders</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Customer ID</th>
+                <th>Payment Method</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Product Names</th>
+                <th>Product Images</th>
+                <th>Actions</th> <!-- New column for actions -->
+            </tr>
+        </thead>
+        <tbody id="orders-list"></tbody>
+    </table>
+
+    <script>
+        
+        const consumerKey = 'ck_03aa52dfa64b8857d818fd920a75868327d9ba57';
+        const consumerSecret = 'cs_6501554ef90417ea4c552176073cbdd001ebd163';
+        let currentPage = 1;
+        let ordersUrl = `https://vaseegrahveda.com/wp-json/wc/v3/orders?consumer_key=${consumerKey}&consumer_secret=${consumerSecret}&per_page=100&page=${currentPage}`;
+
+        // Function to display orders
+        function displayOrders(orders) {
+            const ordersListTable = document.getElementById('orders-list');
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.billing.first_name} ${order.billing.last_name}</td>
+                    <td>${order.billing.address_1}</td>
+                    <td>${order.customer_id}</td>
+                    <td>${order.payment_method_title}</td>
+                    <td>${order.status}</td>
+                    <td>${order.total}</td>
+                    <td>${getProductNames(order)}</td>
+                    <td>${getProductImages(order)}</td>
+                    <td><button onclick="printOrder(${order.id})">Print</button></td> <!-- Button for printing -->
+                `;
+                ordersListTable.appendChild(row);
+            });
+        }
+
+        // Function to get product names with quantities HTML
+        function getProductNames(order) {
+            let productNamesHtml = '';
+            order.line_items.forEach((item, index) => {
+                productNamesHtml += `${index + 1}. ${item.name} x ${item.quantity} <br>`;
+            });
+            return productNamesHtml;
+        }
+
+        // Function to get product images HTML
+        function getProductImages(order) {
+            let productImagesHtml = '';
+            order.line_items.forEach(item => {
+                const product = item.product;
+                if (product && product.images && product.images.length > 0) {
+                    product.images.forEach(image => {
+                        productImagesHtml += `<img src="${image.src}" alt="${product.name}" class="product-img"><br>`;
+                    });
+                } 
+            });
+            return productImagesHtml;
+        }
+
+        // Function to handle printing of an order
+        function printOrder(orderId) {
+            // Implement printing logic here
+            alert(`Printing order with ID: ${orderId}`);
+        }
+
+        // Function to fetch orders from WooCommerce API
+        function fetchOrders() {
+            fetch(ordersUrl)
+                .then(response => {
+                    const totalPages = Number(response.headers.get('X-WP-TotalPages'));
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        ordersUrl = `https://vaseegrahveda.com/wp-json/wc/v3/orders?consumer_key=${consumerKey}&consumer_secret=${consumerSecret}&per_page=100&page=${currentPage}`;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Display the orders
+                    displayOrders(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching orders:', error);
+                    alert('An error occurred while fetching orders. Please try again.');
+                });
+        }
+
+        // Make a GET request to fetch orders
+        fetchOrders();
+    </script>
+</body>
+</html>
